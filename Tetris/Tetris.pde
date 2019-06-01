@@ -95,7 +95,7 @@ void reiniciar(){
   draw();
 }
 void keyPressed() {
-  if (keyCode == 'j' && acabado) {
+  if (key == 'j' && acabado) {
     reiniciar();
   }
 }
