@@ -6,6 +6,8 @@ Figura figura;
 Cuadrado[][] cuadrados;
 int tiempoInicio, tiempoActual;
 boolean acabado = false;
+boolean preparado = false;
+boolean jugadorOk = false;
 
 void settings() {
   size(400,800); 
@@ -19,7 +21,8 @@ void setup()
     PApplet.runSketch(args, sa);
     background(255, 204, 0);
     textSize(32);
-    fill(0,0,127);  
+    fill(0,0,127); 
+
     //se permiten distintos tañamos de pantalla sin problema
   //size(400, 800);
   //Numero de filas que se pintan, 
@@ -41,6 +44,17 @@ void setup()
 void draw()
 {
   background(50);
+   if(preparado == false) {
+    textSize(32);
+    fill(0,0,0);
+    text("El juego está cargando", 20, 200); 
+  }
+  else if(preparado && !jugadorOk){
+    textSize(32);
+    fill(0,0,0);
+    text("Presiona E para empezar", 15, 200); 
+  }
+  else if(preparado && jugadorOk){
   if (frameCount % 10 == 0)
   {
     figura.abajo();
@@ -74,7 +88,7 @@ void draw()
   figura.show();
   if(acabado)
     acabado();
-
+  }
 }
 void acabado(){
    textSize(60);
@@ -97,6 +111,9 @@ void reiniciar(){
 void keyPressed() {
   if (key == 'j' && acabado) {
     reiniciar();
+  }
+  if (key == 'e' && preparado) {
+    jugadorOk = true;
   }
 }
 
@@ -348,6 +365,7 @@ public class Movimiento extends PApplet {
   }
 
   void draw() {  
+    preparado = true;
     //scale(0.5);
     cv.loadImage(video);
   
@@ -364,13 +382,13 @@ public class Movimiento extends PApplet {
           figura.gira();  
         }
       else if(manos[0].x>0 && (manos[0].x+manos[0].width)<=640 && manos[0].y+manos[0].height>=240) {        
-          figura.suelo();  
+          figura.abajo();  
         }
       else if(manos[0].y>0 && (manos[0].y+manos[0].height)<=360 && manos[0].x+manos[0].width<=120) {        
-          figura.derecha();  
+          figura.izquierda();  
         }
       else if(manos[0].y>0 && (manos[0].y+manos[0].height)<=360 && manos[0].x+manos[0].width>=520) {        
-          figura.izquierda();  
+          figura.derecha();  
         }
         }
   
