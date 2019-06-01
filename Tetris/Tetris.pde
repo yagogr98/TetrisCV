@@ -4,11 +4,23 @@ int filas, columnas;
 Figura figura;
 // Cada cuadrado del tablero será un objeto de tipo cuadrado
 Cuadrado[][] cuadrados;
+int tiempoInicio, tiempoActual;
+
+void settings() {
+  size(400,800); 
+}
 
 void setup()
 {
+  
+      String[] args = {"TwoFrameTest"};
+    Movimiento sa = new Movimiento();
+    PApplet.runSketch(args, sa);
+    background(255, 204, 0);
+    textSize(32);
+    fill(0,0,127);  
     //se permiten distintos tañamos de pantalla sin problema
-  size(400, 800);
+  //size(400, 800);
   //Numero de filas que se pintan, 
   filas = height / 25;
   //Numero de columnas
@@ -24,6 +36,42 @@ void setup()
   }
   //Nueva forma
   figura = new Figura();
+}
+void draw()
+{
+  background(50);
+  if (frameCount % 10 == 0)
+  {
+    figura.abajo();
+  }
+
+  for (int j = 0; j < cuadrados[0].length; j++)
+  {
+    boolean libre = true; 
+    for (int i = cuadrados.length - 1; i >= 0; i--) 
+    {                                           
+      cuadrados[i][j].show();
+      //Si el cuadrado esta lleno no pasa la forma
+      if (cuadrados[i][j].isForma == false)
+      {
+        libre = false;
+      }
+    }
+    //Si está libre la pintamos
+    if (libre) 
+    {
+      for (int k = j; k > 0; k--)
+      {
+        for (int l = 0; l < cuadrados.length; l++)
+        {
+          cuadrados[l][k].isForma = cuadrados[l][k-1].isForma;
+          cuadrados[l][k].col = cuadrados[l][k-1].col;
+        }
+      }
+    }
+  }
+  figura.show();
+
 }
 
 //Clase Cuadrado
@@ -241,5 +289,64 @@ class Figura
     {
       cuadradosForma[i].show();
     }
+  }
+}
+
+
+
+
+import gab.opencv.*;
+import processing.video.*;
+import java.awt.*;
+
+public class Movimiento extends PApplet {
+
+  Capture video;
+  OpenCV cv;
+  
+
+  public void settings() {
+    size(640,360);
+  }
+
+  void setup() {     
+    video = new Capture(this, 640,360);
+    cv = new OpenCV(this, 640,360); 
+    cv.loadCascade("fist.xml");
+    tiempoActual = 0;
+    tiempoInicio = millis();
+    video.start();
+  }
+
+  void draw() {  
+    boolean moved = false;
+    //scale(0.5);
+    cv.loadImage(video);
+  
+    image(video, 0, 0 );
+  
+    noFill();
+    stroke(155);
+    strokeWeight(2);
+    Rectangle[] manos = cv.detect();
+    if(manos.length >0) {
+     
+      rect(manos[0].x, manos[0].y, manos[0].width, manos[0].height);
+      if(manos[0].x>0 && (manos[0].x+manos[0].width)<=640 && manos[0].y+manos[0].height<=100) {        
+        //Solo se gira una vez, para volver a girar tenemos que volver a la posicion "segura"
+        if(moved == false){
+          figura.gira();  
+          moved = true;
+        }
+        }
+       else if(manos[0].x>0 && (manos[0].x+manos[0].width)>640 && manos[0].y+manos[0].height>100) {      
+        moved = false;
+        }
+  }
+    line(0, 100, 640, 100);
+  }
+
+  void captureEvent(Capture c) {
+    c.read();
   }
 }
