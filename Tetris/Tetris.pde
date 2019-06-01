@@ -5,6 +5,7 @@ Figura figura;
 // Cada cuadrado del tablero será un objeto de tipo cuadrado
 Cuadrado[][] cuadrados;
 int tiempoInicio, tiempoActual;
+boolean acabado = false;
 
 void settings() {
   size(400,800); 
@@ -13,7 +14,7 @@ void settings() {
 void setup()
 {
   
-      String[] args = {"TwoFrameTest"};
+    String[] args = {"TwoFrameTest"};
     Movimiento sa = new Movimiento();
     PApplet.runSketch(args, sa);
     background(255, 204, 0);
@@ -71,7 +72,32 @@ void draw()
     }
   }
   figura.show();
+  if(acabado)
+    acabado();
 
+}
+void acabado(){
+   textSize(60);
+    fill(127,0,0);
+    text("Perdiste", 75, 200);
+    textSize(30);
+    fill(0,0,127);
+    text("Presiona j para reiniciar", 40, 260); 
+}
+void reiniciar(){
+    for (int i = 0; i < cuadrados.length; i++)
+  {
+    for (int j = 0; j < cuadrados[i].length; j++)
+    {
+      cuadrados[i][j] = new Cuadrado(i, j, false);
+    }
+  }
+  draw();
+}
+void keyPressed() {
+  if (keyCode == 'j' && acabado) {
+    reiniciar();
+  }
 }
 
 //Clase Cuadrado
@@ -141,9 +167,12 @@ class Figura
       {
         int ejex = cuadradosForma[i].x;
         int ejey = cuadradosForma[i].y;
+        if(ejex <0 || ejey <0){
+            acabado = true;
+        } else{
         cuadrados[ejex][ejey].isForma = true;
         cuadrados[ejex][ejey].col = cuadradosForma[i].col;
-      }
+      }}
       nuevaFormaAleatoria();
     }
     return valido;
@@ -319,7 +348,6 @@ public class Movimiento extends PApplet {
   }
 
   void draw() {  
-    boolean moved = false;
     //scale(0.5);
     cv.loadImage(video);
   
@@ -332,18 +360,25 @@ public class Movimiento extends PApplet {
     if(manos.length >0) {
      
       rect(manos[0].x, manos[0].y, manos[0].width, manos[0].height);
-      if(manos[0].x>0 && (manos[0].x+manos[0].width)<=640 && manos[0].y+manos[0].height<=100) {        
-        //Solo se gira una vez, para volver a girar tenemos que volver a la posicion "segura"
-        if(moved == false){
+      if(manos[0].x>0 && (manos[0].x+manos[0].width)<=640 && manos[0].y+manos[0].height<=120) {        
           figura.gira();  
-          moved = true;
+        }
+      else if(manos[0].x>0 && (manos[0].x+manos[0].width)<=640 && manos[0].y+manos[0].height>=240) {        
+          figura.suelo();  
+        }
+      else if(manos[0].y>0 && (manos[0].y+manos[0].height)<=360 && manos[0].x+manos[0].width<=120) {        
+          figura.derecha();  
+        }
+      else if(manos[0].y>0 && (manos[0].y+manos[0].height)<=360 && manos[0].x+manos[0].width>=520) {        
+          figura.izquierda();  
         }
         }
-       else if(manos[0].x>0 && (manos[0].x+manos[0].width)>640 && manos[0].y+manos[0].height>100) {      
-        moved = false;
-        }
-  }
-    line(0, 100, 640, 100);
+  
+  //Lineas de campo
+    line(0, 120, 640, 120);
+    line(0, 240, 640, 240);
+    line(120, 0, 120, 360);
+    line(520, 0, 520, 360);
   }
 
   void captureEvent(Capture c) {
