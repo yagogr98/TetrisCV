@@ -8,6 +8,7 @@ int tiempoInicio, tiempoActual;
 boolean acabado = false;
 boolean preparado = false;
 boolean jugadorOk = false;
+boolean pausa = false;
 
 void settings() {
   size(400,800); 
@@ -54,7 +55,12 @@ void draw()
     fill(0,0,0);
     text("Presiona E para empezar", 15, 200); 
   }
-  else if(preparado && jugadorOk){
+  else if(preparado && jugadorOk && pausa){
+    textSize(32);
+    fill(0,0,0);
+    text("Menú de pausa", 50, 200); 
+    text("Presiona P para seguir", 20, 250); 
+  } else if(preparado && jugadorOk && !pausa){
   if (frameCount % 10 == 0)
   {
     figura.abajo();
@@ -114,6 +120,9 @@ void keyPressed() {
   }
   if (key == 'e' && preparado) {
     jugadorOk = true;
+  }
+  if (key == 'p' && preparado && jugadorOk) {
+    pausa = !pausa;
   }
 }
 
