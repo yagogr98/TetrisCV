@@ -9,6 +9,11 @@ boolean acabado = false;
 boolean preparado = false;
 boolean jugadorOk = false;
 boolean pausa = false;
+boolean seHaMovido = false;
+color colorPrincipal; 
+int manoX = 0;
+int manoY = 0;
+int thresholdColor = 20;
 
 void settings() {
   size(400,800); 
@@ -260,6 +265,7 @@ class Figura
 
   void gira()
   {
+    if(!seHaMovido){
     boolean valido = true;
     //Giramos a partir del 1 ya que siempre hay un cuadrado de cada figura que no se mueve
     for (int i = 1; i < 4; i++) 
@@ -284,10 +290,13 @@ class Figura
       cuadradosForma[i].x = x;
       cuadradosForma[i].y = y;
     }
-  }
+    seHaMovido = true;
+    }
+}
 
   void derecha()
   {
+    
     boolean valido = true;
     for (int i = 0; i < 4; i++)
     {
@@ -304,11 +313,14 @@ class Figura
       //Movemos a la derecha
       cuadradosForma[i].x++;
     }
+    seHaMovido = true;
+    
   }
 
 
   void izquierda()
   {
+    
     boolean valido = true;
     for (int i = 0; i < 4; i++)
     {
@@ -325,16 +337,45 @@ class Figura
       //Movemos a la izquierda
       cuadradosForma[i].x--;
     }
-  }
-
+    seHaMovido = true;
+    }
+  
 
 
   void suelo()
   {
+    if(!seHaMovido){
+    //Si choca no se mueve mas
     boolean valido = true;
-    while (valido)
+    for (int i = 0; i < 4; i++)
     {
-      valido = abajo();
+      if (cuadradosForma[i].y >= filas-1 || cuadrados[cuadradosForma[i].x][cuadradosForma[i].y+1].isForma)
+      {
+        valido = false;
+        break;
+      }
+    }
+
+    for (int i = 0; i < 4 && valido; i++)
+    {
+      cuadradosForma[i].y++;
+    }
+
+    if (valido == false)
+    {
+      for (int i = 0; i < 4; i++)
+      {
+        int ejex = cuadradosForma[i].x;
+        int ejey = cuadradosForma[i].y;
+        if(ejex <0 || ejey <0){
+            acabado = true;
+        } else{
+        cuadrados[ejex][ejey].isForma = true;
+        cuadrados[ejex][ejey].col = cuadradosForma[i].col;
+      }}
+      nuevaFormaAleatoria();
+    }
+    seHaMovido =true;
     }
   }
 
@@ -348,8 +389,6 @@ class Figura
 }
 
 
-
-
 import gab.opencv.*;
 import processing.video.*;
 import java.awt.*;
@@ -357,7 +396,6 @@ import java.awt.*;
 public class Movimiento extends PApplet {
 
   Capture video;
-  OpenCV cv;
   
 
   public void settings() {
@@ -366,49 +404,81 @@ public class Movimiento extends PApplet {
 
   void setup() {     
     video = new Capture(this, 640,360);
-    cv = new OpenCV(this, 640,360); 
-    cv.loadCascade("fist.xml");
     tiempoActual = 0;
     tiempoInicio = millis();
     video.start();
   }
 
   void draw() {  
+    video.loadPixels();
     preparado = true;
     //scale(0.5);
-    cv.loadImage(video);
   
     image(video, 0, 0 );
   
-    noFill();
-    stroke(155);
-    strokeWeight(2);
-    Rectangle[] manos = cv.detect();
-    if(manos.length >0) {
+    float mejorColor = 500; 
+  //Recorremos todos los pixeles del video y comprobamos uno a uno la distancia de nuestro color con el del pixel, el que mas se
+  //Acerque de todos será el mejor color, siempre y cuando el mejor color tenga una distancia menor de la variable threshold con el original
+  for (int x = 0; x < video.width; x ++ ) {
+    for (int y = 0; y < video.height; y ++ ) {
+      int localizacion = x + y*video.width;
+      color ColorPixelActual = video.pixels[localizacion];
+      float r1 = red(ColorPixelActual);
+      float g1 = green(ColorPixelActual);
+      float b1 = blue(ColorPixelActual);
+      float r2 = red(colorPrincipal);
+      float g2 = green(colorPrincipal);
+      float b2 = blue(colorPrincipal);
+
+      // Funcion euclidea que determina la distancia entre dos colores
+      float d = dist(r1, g1, b1, r2, g2, b2); 
+      //Si es el mejor color guardamos la distancia.
+      if (d < mejorColor) {
+        mejorColor = d;
+        manoX = x;
+        manoY = y;
+      }
+    }
+  }
+  //Pintamos localización del mejor color
+  if (mejorColor < thresholdColor) { 
+    strokeWeight(4.0);
+    stroke(0);
+    ellipse(manoX, manoY, 16, 16);
+  }
      
-      rect(manos[0].x, manos[0].y, manos[0].width, manos[0].height);
-      if(manos[0].x>0 && (manos[0].x+manos[0].width)<=640 && manos[0].y+manos[0].height<=120) {        
-          figura.gira();  
+      if(manoX>0 && manoX<=640 && manoY<=120) {        
+          figura.gira(); 
+          
         }
-      else if(manos[0].x>0 && (manos[0].x+manos[0].width)<=640 && manos[0].y+manos[0].height>=240) {        
-          figura.abajo();  
+      else if(manoX>0 && manoX<=640 && manoY>=240) {        
+          figura.suelo(); 
+          
         }
-      else if(manos[0].y>0 && (manos[0].y+manos[0].height)<=360 && manos[0].x+manos[0].width<=120) {        
-          figura.izquierda();  
+      else if(manoY>0 && manoY<=360 && manoX<=220) {        
+          figura.izquierda(); 
+          
         }
-      else if(manos[0].y>0 && (manos[0].y+manos[0].height)<=360 && manos[0].x+manos[0].width>=520) {        
+      else if(manoY>0 && manoY<=360 && manoX>=420) {        
           figura.derecha();  
+          
         }
+        else{
+          seHaMovido = false;
         }
-  
   //Lineas de campo
     line(0, 120, 640, 120);
     line(0, 240, 640, 240);
-    line(120, 0, 120, 360);
-    line(520, 0, 520, 360);
+    line(220, 0, 220, 360);
+    line(420, 0, 420, 360);
   }
 
   void captureEvent(Capture c) {
     c.read();
   }
+  void mousePressed() {
+  // Guardar el color en el que hacemos click
+  int localizacion = mouseX + mouseY*video.width;
+  colorPrincipal = video.pixels[localizacion];
+}
 }
