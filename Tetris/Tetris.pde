@@ -14,6 +14,8 @@ color colorPrincipal;
 int manoX = 0;
 int manoY = 0;
 int thresholdColor = 20;
+boolean hayColor = false;
+boolean situado = false;
 
 void settings() {
   size(400,800); 
@@ -56,9 +58,9 @@ void draw()
     text("El juego está cargando", 20, 200); 
   }
   else if(preparado && !jugadorOk){
-    textSize(32);
+    textSize(20);
     fill(0,0,0);
-    text("Presiona E para empezar", 15, 200); 
+    text("Pulse el color a seguir\nSitue la mano en el cuadro central\nPulse E para empezar", 15, 200); 
   }
   else if(preparado && jugadorOk && pausa){
     textSize(32);
@@ -123,7 +125,7 @@ void keyPressed() {
   if (key == 'j' && acabado) {
     reiniciar();
   }
-  if (key == 'e' && preparado) {
+  if (key == 'e' && preparado && hayColor && situado) {
     jugadorOk = true;
   }
   if (key == 'p' && preparado && jugadorOk) {
@@ -344,7 +346,7 @@ class Figura
 
   void suelo()
   {
-    if(!seHaMovido){
+  //  if(!seHaMovido){
     //Si choca no se mueve mas
     boolean valido = true;
     for (int i = 0; i < 4; i++)
@@ -376,7 +378,7 @@ class Figura
       nuevaFormaAleatoria();
     }
     seHaMovido =true;
-    }
+    //}
   }
 
   void show()
@@ -451,11 +453,11 @@ public class Movimiento extends PApplet {
           figura.gira(); 
           
         }
-      else if(manoX>0 && manoX<=640 && manoY>=240) {        
+      else if(manoX>220 && manoX<=420 && manoY>=240) {        
           figura.suelo(); 
           
         }
-      else if(manoY>0 && manoY<=360 && manoX<=220) {        
+      else if(manoY>0 && manoY<=360 && manoX<=240) {        
           figura.izquierda(); 
           
         }
@@ -465,12 +467,13 @@ public class Movimiento extends PApplet {
         }
         else{
           seHaMovido = false;
+          situado = true;
         }
   //Lineas de campo
     line(0, 120, 640, 120);
-    line(0, 240, 640, 240);
-    line(220, 0, 220, 360);
-    line(420, 0, 420, 360);
+    line(220, 240, 420, 240);
+    line(220, 120, 220, 360);
+    line(420, 120, 420, 360);
   }
 
   void captureEvent(Capture c) {
@@ -480,5 +483,6 @@ public class Movimiento extends PApplet {
   // Guardar el color en el que hacemos click
   int localizacion = mouseX + mouseY*video.width;
   colorPrincipal = video.pixels[localizacion];
+  hayColor=true;
 }
 }
