@@ -140,7 +140,7 @@ void keyPressed() {
   if (key == 'e' && preparado && hayColor && situado) {
     jugadorOk = true;
   }
-    if (key == 'k' && preparado && hayColor && situado) {
+    if (key == 'k' && preparado) {
     tecla = true;
     jugadorOk=true;
   }
