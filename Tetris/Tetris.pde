@@ -16,6 +16,7 @@ int manoY = 0;
 int thresholdColor = 20;
 boolean hayColor = false;
 boolean situado = false;
+boolean tecla = false;
 
 void settings() {
   size(400,800); 
@@ -60,7 +61,7 @@ void draw()
   else if(preparado && !jugadorOk){
     textSize(20);
     fill(0,0,0);
-    text("Pulse el color a seguir\nSitue la mano en el cuadro central\nPulse E para empezar", 15, 200); 
+    text("Pulse el color a seguir\nSitue la mano en el cuadro central\nPulse E para empezar\nSi desea jugar con teclas pulse k", 15, 200); 
   }
   else if(preparado && jugadorOk && pausa){
     textSize(32);
@@ -112,6 +113,17 @@ void acabado(){
     text("Presiona j para reiniciar", 40, 260); 
 }
 void reiniciar(){
+
+   acabado = false;
+ preparado = false;
+ jugadorOk = false;
+ pausa = false;
+ seHaMovido = false;
+ manoX = 0;
+ manoY = 0;
+ thresholdColor = 20;
+ hayColor = false;
+ situado = false;
     for (int i = 0; i < cuadrados.length; i++)
   {
     for (int j = 0; j < cuadrados[i].length; j++)
@@ -128,9 +140,38 @@ void keyPressed() {
   if (key == 'e' && preparado && hayColor && situado) {
     jugadorOk = true;
   }
+    if (key == 'k' && preparado && hayColor && situado) {
+    tecla = true;
+    jugadorOk=true;
+  }
   if (key == 'p' && preparado && jugadorOk) {
     pausa = !pausa;
   }
+  if( keyCode == LEFT && preparado && jugadorOk && tecla){
+    left();
+  }
+  if(keyCode == RIGHT && preparado && jugadorOk && tecla){
+    rigth();
+  }
+  if(keyCode == UP && preparado && jugadorOk && tecla){
+    arriba();
+  }
+  if(keyCode == DOWN && preparado && jugadorOk && tecla){
+    abajo();
+  }
+}
+
+void left(){
+figura.izquierda();
+}
+void rigth(){
+figura.derecha();
+}
+void arriba(){
+figura.gira();
+}
+void abajo(){
+figura.suelo();
 }
 
 //Clase Cuadrado
@@ -182,11 +223,13 @@ class Figura
     boolean valido = true;
     for (int i = 0; i < 4; i++)
     {
+      if(cuadradosForma.length >i){
       if (cuadradosForma[i].y >= filas-1 || cuadrados[cuadradosForma[i].x][cuadradosForma[i].y+1].isForma)
       {
         valido = false;
         break;
       }
+    }
     }
 
     for (int i = 0; i < 4 && valido; i++)
@@ -209,6 +252,7 @@ class Figura
       nuevaFormaAleatoria();
     }
     return valido;
+    
   }
 
   void nuevaFormaAleatoria()
@@ -298,7 +342,7 @@ class Figura
 
   void derecha()
   {
-    
+    if(!seHaMovido){
     boolean valido = true;
     for (int i = 0; i < 4; i++)
     {
@@ -316,13 +360,14 @@ class Figura
       cuadradosForma[i].x++;
     }
     seHaMovido = true;
+    }
     
   }
 
 
   void izquierda()
   {
-    
+    if(!seHaMovido){
     boolean valido = true;
     for (int i = 0; i < 4; i++)
     {
@@ -340,7 +385,9 @@ class Figura
       cuadradosForma[i].x--;
     }
     seHaMovido = true;
+
     }
+  }
   
 
 
@@ -449,21 +496,21 @@ public class Movimiento extends PApplet {
     ellipse(manoX, manoY, 16, 16);
   }
      
-      if(manoX>0 && manoX<=640 && manoY<=120) {        
+      if(manoX>0 && manoX<=640 && manoY<=120 && !tecla) {        
           figura.gira(); 
           
         }
-      else if(manoX>220 && manoX<=420 && manoY>=240) {        
+      else if(manoX>220 && manoX<=420 && manoY>=240 && !tecla) {        
           figura.suelo(); 
           
         }
-      else if(manoY>0 && manoY<=360 && manoX<=240) {        
+      else if(manoY>0 && manoY<=360 && manoX<=240 && !tecla) {        
           figura.izquierda(); 
           
         }
-      else if(manoY>0 && manoY<=360 && manoX>=420) {        
+      else if(manoY>0 && manoY<=360 && manoX>=420 && !tecla) {        
           figura.derecha();  
-          
+
         }
         else{
           seHaMovido = false;
